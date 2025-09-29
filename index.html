@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FutE - Future Earth Predictor</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+    body { font-family: 'Roboto', sans-serif; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; background: #f8f9fa; min-height: 100vh; }
+    .app-frame { position: relative; background: #ffffff; border-radius: 10px; border: 1px solid #ccc; padding: 20px; max-width: 400px; width: 90%; display: flex; flex-direction: column; align-items: center; max-height: 400px; overflow: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    h1 { font-size: 1.8em; color: #333; margin-top: 0; text-align: center; }
+    p { font-size: 1em; color: #555; text-align: center; margin-bottom: 15px; }
+    .dark-toggle { position: absolute; top: 15px; right: 15px; width: 35px; height: 35px; border-radius: 50%; border: 1px solid #aaa; background: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+    .dark-toggle:hover { background: #e0e0e0; }
+    .input-group { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 10px; width: 100%; }
+    .input-row { display: flex; gap: 10px; width: 100%; }
+    input { padding: 10px 12px; font-size: 14px; border-radius: 5px; border: 1px solid #ccc; outline: none; flex: 1; }
+    input:focus { border-color: #007bff; }
+    button { padding: 10px 15px; font-size: 14px; border-radius: 5px; border: none; background: #007bff; color: white; cursor: pointer; flex: 1; }
+    button:hover { background: #0056b3; }
+    #prediction { margin-top: 20px; font-size: 16px; font-weight: bold; max-width: 100%; padding: 15px; border-radius: 8px; min-height: 60px; background-color: #f1f1f1; color: #333; text-align: left; line-height: 1.5; word-wrap: break-word; }
+    footer { text-align: center; margin-top: 20px; font-size: 0.8em; color: #777; }
+    body.dark-mode { background: #121212; color: #e0e0e0; }
+    body.dark-mode .app-frame { background: #1f1f1f; border-color: #444; }
+    body.dark-mode input { border-color: #555; background: #2a2a2a; color: #e0e0e0; }
+    body.dark-mode button { background: #444; color: #e0e0e0; }
+    body.dark-mode #prediction { background-color: #2a2a2a; color: #e0e0e0; }
+    body.dark-mode .dark-toggle { background: #1f1f1f; border-color:#666; }
+    @media(max-width:480px){ .input-row { flex-direction: column; } }
+  </style>
+</head>
+<body>
+  <div class="app-frame">
+    <div class="dark-toggle" onclick="toggleDarkMode()">🌙</div>
+    <h1>FutE</h1>
+    <p>Ask a question about Earth's future!</p>
+    <div class="input-group">
+      <div class="input-row">
+        <input type="text" id="question" placeholder="Type your question here...">
+        <button onclick="askHybrid()">Ask</button>
+        <button onclick="clearAll()">Clear</button>
+      </div>
+    </div>
+    <div id="prediction">Your answer will appear here...</div>
+    <footer>© Manik Roy 2025 | All Rights Reserved.</footer>
+  </div>
+  <script>
+    function toggleDarkMode(){ document.body.classList.toggle('dark-mode'); }
+    function clearAll(){ document.getElementById('question').value=''; document.getElementById('prediction').textContent='Your answer will appear here...'; document.getElementById('prediction').className=''; }
+
+    const offlinePool = [
+  { keyword: "education", answers: [
+    "Education in 50 years will be fully digital, personalized using AI tutors.",
+    "Schools will focus more on emotional intelligence and creativity than rote learning.",
+    "Global literacy rates will approach 100% thanks to AI-based education programs.",
+    "Virtual reality classrooms will allow immersive learning experiences.",
+    "AI will automatically design learning paths tailored to each student.",
+    "Education will emphasize sustainability and global citizenship."
+  ]},
+  { keyword: "crime", answers: [
+    "Crime rates may decline due to advanced surveillance and predictive policing.",
+    "Cybercrime will become more common than physical crime.",
+    "Social reforms and technology will shift crime patterns significantly.",
+    "AI-driven law enforcement will predict and prevent criminal acts.",
+    "Smart cities will implement automated emergency response systems.",
+    "Crime may increasingly involve digital assets rather than physical ones."
+  ]},
+  { keyword: "security", answers: [
+    "Cities will have AI-driven security monitoring with minimal human intervention.",
+    "Personal data protection will become a top priority worldwide.",
+    "Autonomous drones will patrol public spaces for safety.",
+    "Quantum encryption may secure global communications.",
+    "Biometric systems will replace traditional security checks.",
+    "Cybersecurity AI will anticipate threats before they happen."
+  ]},
+  { keyword: "relationship", answers: [
+    "Relationships may become more virtual with advanced social AI companions.",
+    "Cross-cultural marriages will increase with global connectivity.",
+    "Dating algorithms will predict compatibility with high accuracy.",
+    "AI-mediated counseling will strengthen partnerships.",
+    "Virtual social networks will redefine intimacy and friendships.",
+    "Interpersonal communication may blend augmented reality experiences."
+  ]},
+  { keyword: "society", answers: [
+    "Societies may shift towards sustainability and minimal environmental impact.",
+    "Population distribution will favor smart cities.",
+    "Community-driven governance will emerge with AI assistance.",
+    "Social equity will improve through predictive resource allocation.",
+    "Cultural blending will accelerate due to globalized networks.",
+    "AI will mediate social conflicts and promote cohesion."
+  ]},
+  { keyword: "manner", answers: [
+    "Social etiquette may evolve with AI assistants helping humans communicate politely.",
+    "Globalized manners will mix local traditions with universal norms.",
+    "Education in manners will be integrated into virtual reality simulations.",
+    "Politeness and empathy may be measured and encouraged using AI feedback.",
+    "Virtual social mentors will teach cultural norms globally.",
+    "Digital interfaces may guide proper manners in public spaces."
+  ]},
+  { keyword: "animals", answers: [
+    "Wildlife will increasingly coexist with humans in urban spaces.",
+    "Conservation efforts will be managed by AI for optimal results.",
+    "Animal communication research may enable limited interspecies interactions.",
+    "Habitat restoration projects will rely on AI monitoring.",
+    "Endangered species will be cloned or genetically supported.",
+    "Urban planning will include green corridors for animals."
+  ]},
+  { keyword: "forests", answers: [
+    "AI will manage forests to maximize biodiversity.",
+    "Urban forests will become common for air quality and leisure.",
+    "Reforestation will be automated using drones.",
+    "Climate-resistant species will be introduced to maintain balance.",
+    "Forests may serve as carbon capture hubs for energy neutral cities.",
+    "Forest monitoring systems will prevent illegal logging automatically."
+  ]},
+  { keyword: "deserts", answers: [
+    "Deserts will be harnessed for solar energy farms.",
+    "Desert greening projects may create new habitats using AI irrigation.",
+    "Some deserts will become tourism and research hubs.",
+    "Sandstorms will be predicted and mitigated by AI sensors.",
+    "Deserts may host spaceports and testing grounds.",
+    "Water harvesting techniques will transform desert living."
+  ]},
+  { keyword: "glaciers", answers: [
+    "Glaciers may be artificially stabilized to slow melting.",
+    "Polar research will monitor glacier changes in real time.",
+    "AI models will predict sea level rises caused by glacier melt.",
+    "Glacial meltwater may be harnessed for fresh water.",
+    "Tourism will adapt with virtual glacier experiences.",
+    "Global climate action will focus on preserving ice caps."
+  ]},
+  { keyword: "AI", answers: [
+    "AI will guide city management and healthcare decisions.",
+    "Artificial intelligence will evolve into creative problem-solving entities.",
+    "AI companions will provide emotional and cognitive support.",
+    "Smart AI networks will optimize global logistics.",
+    "AI ethics boards will regulate decision-making across industries.",
+    "AI will help humans adapt to climate and societal changes."
+  ]},
+  { keyword: "technology", answers: [
+    "Technology will enable seamless global communication.",
+    "Nano-robots may repair human bodies at the cellular level.",
+    "Quantum computing will solve previously impossible problems.",
+    "Wearable tech will merge augmented reality with daily life.",
+    "Automation will transform all industries for efficiency.",
+    "Technology will allow humans to explore distant planets."
+  ]},
+  { keyword: "robotics", answers: [
+    "Robots will assist in homes, healthcare, and hazardous jobs.",
+    "Humanoid robots may act as companions and assistants.",
+    "Robotics will merge with AI for autonomous problem-solving.",
+    "Industrial robots will operate with minimal human oversight.",
+    "Robots will help restore ecosystems and endangered species.",
+    "Advanced robotics will make space exploration safer."
+  ]},
+  { keyword: "space", answers: [
+    "Space colonies may host humans on Mars and Moon.",
+    "Asteroid mining will provide new resources for Earth.",
+    "Space telescopes will reveal distant civilizations.",
+    "Terraforming experiments may begin in controlled environments.",
+    "Satellite networks will provide global internet access.",
+    "Interstellar travel concepts will be tested with AI simulations."
+  ]},
+  { keyword: "energy", answers: [
+    "Renewable energy will replace fossil fuels completely.",
+    "Fusion power may become the main global energy source.",
+    "AI will manage energy grids for maximum efficiency.",
+    "Space-based solar energy stations may beam power to Earth.",
+    "Smart homes will produce and store their own energy.",
+    "Energy-efficient cities will reduce environmental impact."
+  ]},
+  { keyword: "health", answers: [
+    "AI diagnostics will prevent diseases before symptoms appear.",
+    "Personalized medicine will optimize treatments for each individual.",
+    "Pandemics will be controlled faster with global AI networks.",
+    "Longevity may increase significantly through gene editing.",
+    "Robotic surgery will become the standard practice.",
+    "Mental health support will integrate VR and AI therapies."
+  ]},
+  { keyword: "pandemics", answers: [
+    "Global early warning systems will predict outbreaks.",
+    "Vaccines will be produced instantly using AI techniques.",
+    "Quarantine measures will be precise and minimally disruptive.",
+    "Health AI will track virus mutations in real time.",
+    "Global collaboration will prevent pandemic escalation.",
+    "Societies will adopt permanent hygiene protocols."
+  ]},
+  { keyword: "population", answers: [
+    "Urban density will be managed with AI-driven planning.",
+    "Global population growth will stabilize due to education.",
+    "Migration patterns will shift with climate changes.",
+    "Smart cities will support high populations efficiently.",
+    "Population data will guide resource allocation accurately.",
+    "Fertility choices may be influenced by AI recommendations."
+  ]},
+  { keyword: "culture", answers: [
+    "Global cultural exchange will accelerate with technology.",
+    "Virtual museums and performances will preserve traditions.",
+    "Languages may merge or adapt for global understanding.",
+    "AI may create new art forms blending multiple cultures.",
+    "Cultural heritage will be monitored and restored digitally.",
+    "Entertainment will be immersive and participatory worldwide."
+  ]},
+  { keyword: "cities", answers: [
+    "Smart cities will operate autonomously with AI management.",
+    "Vertical farms and green roofs will dominate city landscapes.",
+    "Autonomous transport will reduce congestion and pollution.",
+    "Urban planning will prioritize energy efficiency and livability.",
+    "Cities may integrate AI-guided climate adaptation features.",
+    "Population centers may expand in megacities with AI support."
+  ]}
+];
+
+    const categoryMap = {education: 'society', crime: 'society', security: 'society', relationship: 'society', society: 'society', manner: 'society', animals: 'environment', forests: 'environment', deserts: 'environment', glaciers: 'environment', AI: 'technology', technology: 'technology', robotics: 'technology', space: 'space', energy: 'energy', health: 'health', pandemics: 'health', population: 'society', culture: 'society', cities: 'society'};
+
+    async function askHybrid(){
+      const question=document.getElementById("question").value.trim();
+      const output=document.getElementById("prediction");
+      if(!question){output.textContent="⚠️ Please enter a question!"; return;}
+      output.textContent="Thinking... 🤔";
+      try {
+        const response=await fetch("https://openrouter.ai/api/v1/chat/completions",{
+          method:"POST",
+          headers:{"Content-Type":"application/json","Authorization":"Bearer YOUR_OPENROUTER_API_KEY"},
+          body:JSON.stringify({model:"gpt-5-mini",messages:[{role:"system", content:"You are a futuristic Earth predictor."},{role:"user", content:question}],max_tokens:300})
+        });
+        const data=await response.json();
+        let answer=data.choices[0].message.content;
+        let category="";
+        const lower=question.toLowerCase();
+        for(let key in categoryMap){if(lower.includes(key)){category=categoryMap[key]; break;}}
+        for(let key in categoryMap){let regex=new RegExp(key,"gi"); answer=answer.replace(regex, match=>`<mark>${match}</mark>`);}
+        output.innerHTML=`Q: ${question} ❓ → ${answer}`;
+        output.className=category;
+      } catch(err){
+        console.warn("AI unavailable, using offline fallback",err);
+        const lower = question.toLowerCase();
+        let matches = offlinePool.filter(t => lower.includes(t.keyword));
+        let entry = matches.length>0?matches[Math.floor(Math.random()*matches.length)]:offlinePool[Math.floor(Math.random()*offlinePool.length)];
+        let answer = entry.answers[Math.floor(Math.random()*entry.answers.length)];
+        let category = categoryMap[entry.keyword]||"";
+        let highlighted = answer.replace(new RegExp(entry.keyword,"gi"), match => `<mark>${match}</mark>`);
+        output.innerHTML = `Q: ${question} ❓ → ${highlighted}`;
+        output.className = category;
+      }
+    }
+  </script>
+</body>
+</html>
